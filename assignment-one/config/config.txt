@@ -1,0 +1,7 @@
+Window 800 600
+
+Circle ball1 100 100 2 1 255 0 0 50
+Circle ball2 500 300 -2 1 0 255 0 40
+
+Rectangle box1 200 400 1 -2 0 0 255 100 60
+Rectangle box2 600 100 -1 2 255 255 0 80 80
