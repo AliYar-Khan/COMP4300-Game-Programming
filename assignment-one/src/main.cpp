@@ -3,10 +3,12 @@
 #include <imgui-SFML.h>
 
 #include <cstdint>
+#include <cstdio>
 #include <fstream>
 #include <iostream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 struct ShapeData
 {
@@ -254,7 +256,29 @@ int main()
 
             ImGui::Separator();
 
-            ImGui::Text("Selected: %s", shape.name.c_str());
+            char nameBuffer[256];
+
+            if (shape.type == ShapeData::Type::Circle)
+            {
+                ImGui::DragFloat("Radius", &shape.size1, 1.0f, 1.0f, 500.0f);
+            }
+            else if (shape.type == ShapeData::Type::Rectangle)
+            {
+                ImGui::DragFloat("Width", &shape.size1, 1.0f, 1.0f, 800.0f);
+                ImGui::DragFloat("Height", &shape.size2, 1.0f, 1.0f, 600.0f);
+            }
+
+            std::snprintf(
+                nameBuffer,
+                sizeof(nameBuffer),
+                "%s",
+                shape.name.c_str());
+
+            if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
+            {
+                shape.name = nameBuffer;
+            }
+
             ImGui::InputFloat2(
                 "Position",
                 &shape.position.x);
@@ -262,10 +286,23 @@ int main()
             ImGui::InputFloat2(
                 "Velocity",
                 &shape.velocity.x);
-            ImGui::Text("Color: %d, %d, %d",
-                        shape.color.r,
-                        shape.color.g,
-                        shape.color.b);
+
+            int color[3] = {
+                shape.color.r,
+                shape.color.g,
+                shape.color.b};
+
+            if (ImGui::InputInt3("Color", color))
+            {
+                color[0] = std::clamp(color[0], 0, 255);
+                color[1] = std::clamp(color[1], 0, 255);
+                color[2] = std::clamp(color[2], 0, 255);
+
+                shape.color = sf::Color(
+                    static_cast<std::uint8_t>(color[0]),
+                    static_cast<std::uint8_t>(color[1]),
+                    static_cast<std::uint8_t>(color[2]));
+            }
         }
 
         ImGui::End();
