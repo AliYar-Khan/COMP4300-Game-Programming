@@ -1,6 +1,7 @@
 CXX := g++
 
 CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic \
+	-Iinclude \
 	-Iexternal/imgui \
 	-Iexternal/imgui/misc/cpp \
 	-Iexternal/imgui-sfml
@@ -9,6 +10,9 @@ TARGET := build/sfml-shapes
 
 SRC := \
 	src/main.cpp \
+	src/Config.cpp \
+	src/EditorUI.cpp \
+	src/ShapeRenderer.cpp \
 	external/imgui/imgui.cpp \
 	external/imgui/imgui_draw.cpp \
 	external/imgui/imgui_tables.cpp \
