@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <imgui_stdlib.h>
 
 struct ShapeData
 {
@@ -29,6 +30,8 @@ struct ShapeData
 
     float size1;
     float size2;
+
+    bool draw = true;
 };
 
 bool loadConfig(
@@ -144,6 +147,14 @@ int main()
         sf::VideoMode({windowWidth, windowHeight}),
         "SFML Shapes");
 
+    sf::Font font;
+
+    if (!font.openFromFile("./assets/fonts/tech.ttf"))
+    {
+        std::cerr << "Failed to load font\n";
+        return 1;
+    }
+
     ImGui::SFML::Init(window);
 
     sf::Clock clock;
@@ -168,8 +179,12 @@ int main()
 
         for (auto &shape : shapes)
         {
+            if (!shape.draw)
+            {
+                continue;
+            }
+
             shape.position += shape.velocity * deltaTime.asSeconds();
-            ;
 
             if (shape.type == ShapeData::Type::Circle)
             {
@@ -204,6 +219,19 @@ int main()
                 circle.setPosition(shape.position);
                 circle.setFillColor(shape.color);
                 window.draw(circle);
+
+                sf::Text text(font, shape.name, 16);
+                text.setFillColor(sf::Color::White);
+
+                sf::FloatRect textBounds = text.getLocalBounds();
+
+                text.setOrigin(
+                    textBounds.position + textBounds.size / 2.0f);
+
+                text.setPosition(
+                    shape.position + sf::Vector2f(radius, radius));
+
+                window.draw(text);
             }
             else if (shape.type == ShapeData::Type::Rectangle)
             {
@@ -237,72 +265,108 @@ int main()
                 rectangle.setPosition(shape.position);
                 rectangle.setFillColor(shape.color);
                 window.draw(rectangle);
+
+                sf::Text text(font, shape.name, 16);
+                text.setFillColor(sf::Color::White);
+
+                sf::FloatRect textBounds = text.getLocalBounds();
+
+                text.setOrigin(
+                    textBounds.position + textBounds.size / 2.0f);
+
+                text.setPosition(
+                    shape.position + sf::Vector2f(width / 2.0f, height / 2.0f));
+
+                window.draw(text);
             }
         }
 
-        ImGui::Begin("Shapes");
-
-        for (int i = 0; i < static_cast<int>(shapes.size()); ++i)
-        {
-            if (ImGui::Selectable(shapes[i].name.c_str(), selectedShape == i))
-            {
-                selectedShape = i;
-            }
-        }
+        ImGui::Begin("Shape Properties");
 
         if (!shapes.empty())
         {
             ShapeData &shape = shapes[selectedShape];
 
-            ImGui::Separator();
+            std::vector<const char *> shapeNames;
 
-            char nameBuffer[256];
+            for (const auto &s : shapes)
+            {
+                shapeNames.push_back(s.name.c_str());
+            }
+
+            ImGui::SetNextItemWidth(150.0f);
+
+            if (ImGui::Combo(
+                    "Shape",
+                    &selectedShape,
+                    shapeNames.data(),
+                    static_cast<int>(shapeNames.size())))
+            {
+                // selectedShape is automatically updated
+            };
+
+            ImGui::Checkbox("Draw", &shape.draw);
 
             if (shape.type == ShapeData::Type::Circle)
             {
-                ImGui::DragFloat("Radius", &shape.size1, 1.0f, 1.0f, 500.0f);
+                ImGui::SetNextItemWidth(150.0f);
+
+                ImGui::DragFloat(
+                    "Scale",
+                    &shape.size1,
+                    1.0f,
+                    1.0f,
+                    500.0f,
+                    "%.3f");
             }
             else if (shape.type == ShapeData::Type::Rectangle)
             {
-                ImGui::DragFloat("Width", &shape.size1, 1.0f, 1.0f, 800.0f);
-                ImGui::DragFloat("Height", &shape.size2, 1.0f, 1.0f, 600.0f);
+                ImGui::SetNextItemWidth(150.0f);
+
+                ImGui::DragFloat(
+                    "Width",
+                    &shape.size1,
+                    1.0f,
+                    1.0f,
+                    800.0f,
+                    "%.3f");
+
+                ImGui::SetNextItemWidth(150.0f);
+
+                ImGui::DragFloat(
+                    "Height",
+                    &shape.size2,
+                    1.0f,
+                    1.0f,
+                    600.0f,
+                    "%.3f");
             }
 
-            std::snprintf(
-                nameBuffer,
-                sizeof(nameBuffer),
-                "%s",
-                shape.name.c_str());
-
-            if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
-            {
-                shape.name = nameBuffer;
-            }
-
-            ImGui::InputFloat2(
-                "Position",
-                &shape.position.x);
+            // Velocity
+            ImGui::SetNextItemWidth(150.0f);
 
             ImGui::InputFloat2(
                 "Velocity",
                 &shape.velocity.x);
 
-            int color[3] = {
-                shape.color.r,
-                shape.color.g,
-                shape.color.b};
+            // Color
+            float color[3] = {
+                shape.color.r / 255.0f,
+                shape.color.g / 255.0f,
+                shape.color.b / 255.0f};
 
-            if (ImGui::InputInt3("Color", color))
+            ImGui::SetNextItemWidth(150.0f);
+
+            if (ImGui::ColorEdit3("Color", color))
             {
-                color[0] = std::clamp(color[0], 0, 255);
-                color[1] = std::clamp(color[1], 0, 255);
-                color[2] = std::clamp(color[2], 0, 255);
-
                 shape.color = sf::Color(
-                    static_cast<std::uint8_t>(color[0]),
-                    static_cast<std::uint8_t>(color[1]),
-                    static_cast<std::uint8_t>(color[2]));
+                    static_cast<std::uint8_t>(color[0] * 255.0f),
+                    static_cast<std::uint8_t>(color[1] * 255.0f),
+                    static_cast<std::uint8_t>(color[2] * 255.0f));
             }
+
+            ImGui::SetNextItemWidth(150.0f);
+            ImGui::InputText("Name", &shape.name);
         }
 
         ImGui::End();

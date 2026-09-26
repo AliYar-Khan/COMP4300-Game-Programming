@@ -2,6 +2,7 @@ CXX := g++
 
 CXXFLAGS := -std=c++17 -Wall -Wextra -pedantic \
 	-Iexternal/imgui \
+	-Iexternal/imgui/misc/cpp \
 	-Iexternal/imgui-sfml
 
 TARGET := build/sfml-shapes
@@ -12,7 +13,8 @@ SRC := \
 	external/imgui/imgui_draw.cpp \
 	external/imgui/imgui_tables.cpp \
 	external/imgui/imgui_widgets.cpp \
-	external/imgui-sfml/imgui-SFML.cpp
+	external/imgui-sfml/imgui-SFML.cpp \
+	external/imgui/misc/cpp/imgui_stdlib.cpp
 
 LIBS := \
 	-lsfml-graphics \
