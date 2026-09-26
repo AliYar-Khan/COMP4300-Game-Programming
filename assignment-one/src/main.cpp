@@ -345,9 +345,14 @@ int main()
             // Velocity
             ImGui::SetNextItemWidth(150.0f);
 
-            ImGui::InputFloat2(
+            ImGui::DragFloat2(
                 "Velocity",
-                &shape.velocity.x);
+                &shape.velocity.x,
+                1.0f,
+                -1000.0f,
+                1000.0f,
+                "%.3f"
+            );
 
             // Color
             float color[3] = {
